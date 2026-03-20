@@ -82,11 +82,11 @@ autolocation/
    git init
    git add .
    git commit -m "Initial commit — Prototype AutoLocation"
-   git remote add origin https://github.com/VOTRE_USERNAME/autolocation.git
+   git remote add origin https://github.com/VOTRE_USERNAME/CarGO-Auto-Location.git
    git push -u origin main
    ```
 3. Dans les paramètres du dépôt → **Pages** → Source : `main` / `root`
-4. Le site sera disponible sur : `https://VOTRE_USERNAME.github.io/autolocation/`
+4. Le site sera disponible sur : `https://VOTRE_USERNAME.github.io/CarGO-Auto-Location/`
 
 ---
 
