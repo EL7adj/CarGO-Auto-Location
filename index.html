@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarGo - Location de Voitures en Algérie</title>
+    <!-- Tailwind CSS for rapid styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981', // Emerald 500
+                        primaryDark: '#047857', // Emerald 700
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar and transitions */
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f3f4f6; }
+        .page-view { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col min-h-screen">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center cursor-pointer" onclick="navigate('home')">
+                    <i class="fa-solid fa-car-side text-primary text-2xl mr-2"></i>
+                    <span class="font-bold text-2xl tracking-tight text-gray-900">Car<span class="text-primary">Go</span></span>
+                </div>
+                
+                <!-- Dynamic Nav Items (Handled by JS) -->
+                <div class="flex items-center space-x-4" id="nav-menu">
+                    <!-- Injected by updateNavbar() -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 relative">
+
+        <!-- 1. HOMEPAGE -->
+        <section id="page-home" class="page-view active">
+            <div class="bg-primary rounded-2xl p-8 md:p-16 text-white text-center shadow-lg bg-cover bg-center relative overflow-hidden" style="background-image: linear-gradient(rgba(4, 120, 87, 0.8), rgba(4, 120, 87, 0.9)), url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80');">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4">La route vous appartient.</h1>
+                <p class="text-lg md:text-xl mb-8">Trouvez et louez la voiture parfaite partout en Algérie (Alger, Oran, Constantine...).</p>
+                
+                <div class="bg-white p-4 rounded-xl shadow-xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 text-gray-800 items-end">
+                    <div class="flex-1 text-left w-full">
+                        <label class="block text-sm font-bold mb-1">Lieu de départ</label>
+                        <select class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-primary">
+                            <option>Aéroport d'Alger (Houari Boumediene)</option>
+                            <option>Alger Centre</option>
+                            <option>Oran</option>
+                            <option>Constantine</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 text-left w-full">
+                        <label class="block text-sm font-bold mb-1">Date début</label>
+                        <input type="date" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div class="flex-1 text-left w-full">
+                        <label class="block text-sm font-bold mb-1">Date fin</label>
+                        <input type="date" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <button onclick="navigate('catalogue')" class="bg-primaryDark hover:bg-emerald-800 text-white font-bold py-3 px-8 rounded-lg w-full md:w-auto transition">
+                        Rechercher
+                    </button>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-bold mt-12 mb-6">Véhicules Populaires</h2>
+            <div id="home-featured-cars" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+
+        <!-- 2. LOGIN PAGE -->
+        <section id="page-login" class="page-view max-w-md mx-auto mt-10">
+            <div class="bg-white p-8 rounded-2xl shadow-md">
+                <h2 class="text-2xl font-bold text-center mb-6">Connexion à CarGo</h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-bold mb-2">Email</label>
+                    <input type="email" id="login-email" class="w-full border rounded-lg p-3" placeholder="client@cargo.dz" value="client@cargo.dz">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold mb-2">Mot de passe</label>
+                    <input type="password" class="w-full border rounded-lg p-3" value="password123">
+                </div>
+                <button onclick="loginUser()" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primaryDark transition">Se Connecter</button>
+                <div class="mt-4 text-center text-sm">
+                    <span class="text-gray-500">Ou pour tester :</span><br>
+                    <button onclick="loginAdmin()" class="text-blue-600 font-bold hover:underline mt-2">Connexion Administrateur</button>
+                </div>
+                <p class="mt-6 text-center text-sm">Pas encore de compte ? <a href="#" onclick="navigate('register')" class="text-primary font-bold">S'inscrire</a></p>
+            </div>
+        </section>
+
+
+        <!-- 3. REGISTER PAGE -->
+        <section id="page-register" class="page-view max-w-md mx-auto mt-10">
+            <div class="bg-white p-8 rounded-2xl shadow-md">
+                <h2 class="text-2xl font-bold text-center mb-6">Créer un compte</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Nom</label>
+                        <input type="text" class="w-full border rounded-lg p-3" placeholder="Benali">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Prénom</label>
+                        <input type="text" class="w-full border rounded-lg p-3" placeholder="Karim">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-bold mb-2">Téléphone</label>
+                    <input type="tel" class="w-full border rounded-lg p-3" placeholder="05 50 00 00 00">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-bold mb-2">Email</label>
+                    <input type="email" class="w-full border rounded-lg p-3" placeholder="karim@email.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold mb-2">Mot de passe</label>
+                    <input type="password" class="w-full border rounded-lg p-3" placeholder="••••••••">
+                </div>
+                <button onclick="loginUser()" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primaryDark transition">S'inscrire</button>
+                <p class="mt-4 text-center text-sm">Déjà un compte ? <a href="#" onclick="navigate('login')" class="text-primary font-bold">Se connecter</a></p>
+            </div>
+        </section>
+
+
+        <!-- 4. CATALOGUE PAGE WITH FILTERS -->
+        <section id="page-catalogue" class="page-view">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Filters Sidebar -->
+                <aside class="w-full md:w-64 bg-white p-6 rounded-xl shadow-sm h-fit">
+                    <h3 class="font-bold text-lg mb-4 border-b pb-2">Filtres</h3>
+                    
+                    <div class="mb-6">
+                        <label class="font-bold text-sm text-gray-600 block mb-2">Catégorie</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center"><input type="radio" name="cat" value="all" checked onchange="filterCatalogue('all')" class="mr-2"> Toutes</label>
+                            <label class="flex items-center"><input type="radio" name="cat" value="Citadine" onchange="filterCatalogue('Citadine')" class="mr-2"> Citadine</label>
+                            <label class="flex items-center"><input type="radio" name="cat" value="Berline" onchange="filterCatalogue('Berline')" class="mr-2"> Berline</label>
+                            <label class="flex items-center"><input type="radio" name="cat" value="SUV" onchange="filterCatalogue('SUV')" class="mr-2"> SUV</label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-sm text-gray-600 block mb-2">Prix max (DZD/jour)</label>
+                        <input type="range" min="3000" max="15000" step="500" value="15000" class="w-full accent-primary" oninput="document.getElementById('price-val').innerText=this.value; filterCataloguePrice(this.value)">
+                        <div class="text-right text-sm font-bold text-primary" id="price-val">15000</div>
+                    </div>
+                </aside>
+
+                <!-- Catalogue Grid -->
+                <div class="flex-1">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">Notre Flotte</h2>
+                        <span id="catalogue-count" class="text-gray-500 text-sm">0 véhicules trouvés</span>
+                    </div>
+                    <div id="catalogue-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 5. VEHICLE DETAIL + RESERVATION PAGE -->
+        <section id="page-details" class="page-view">
+            <button onclick="navigate('catalogue')" class="text-gray-500 hover:text-primary mb-4 font-bold">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Retour au catalogue
+            </button>
+            <div id="details-container" class="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col md:flex-row">
+                <!-- Injected by JS -->
+            </div>
+        </section>
+
+
+        <!-- 6. CLIENT RESERVATIONS PAGE -->
+        <section id="page-client-reservations" class="page-view">
+            <h2 class="text-2xl font-bold mb-6">Mes Réservations</h2>
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                            <th class="p-4">Véhicule</th>
+                            <th class="p-4">Période</th>
+                            <th class="p-4">Lieu</th>
+                            <th class="p-4">Montant</th>
+                            <th class="p-4">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody id="client-reservations-list" class="text-sm">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- 7. CLIENT PROFILE PAGE -->
+        <section id="page-client-profile" class="page-view max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6">Mon Profil</h2>
+            <div class="bg-white p-8 rounded-2xl shadow-md">
+                <div class="flex items-center mb-8 border-b pb-6">
+                    <div class="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center text-3xl font-bold mr-6">
+                        CB
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Client CarGo</h3>
+                        <p class="text-gray-500">Membre depuis Janvier 2025</p>
+                    </div>
+                </div>
+                <form onsubmit="event.preventDefault(); alert('Profil mis à jour !');">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-bold mb-2">Nom complet</label>
+                            <input type="text" class="w-full border rounded-lg p-3 bg-gray-50" value="Client CarGo">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-2">Email</label>
+                            <input type="email" class="w-full border rounded-lg p-3 bg-gray-50" value="client@cargo.dz" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-2">Téléphone</label>
+                            <input type="tel" class="w-full border rounded-lg p-3 bg-gray-50" value="0555 12 34 56">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-2">Permis de conduire</label>
+                            <input type="text" class="w-full border rounded-lg p-3 bg-gray-50" value="DZ-987654321">
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primaryDark">Enregistrer les modifications</button>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- 8. ADMIN DASHBOARD PAGE -->
+        <section id="page-admin-dashboard" class="page-view">
+            <h2 class="text-2xl font-bold mb-6">Tableau de Bord Administrateur</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-primary">
+                    <h3 class="text-gray-500 text-sm font-bold mb-1">Revenus (Mensuel)</h3>
+                    <div class="text-3xl font-extrabold text-gray-800">145,000 DZD</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <h3 class="text-gray-500 text-sm font-bold mb-1">Réservations Actives</h3>
+                    <div class="text-3xl font-extrabold text-gray-800">12</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
+                    <h3 class="text-gray-500 text-sm font-bold mb-1">Taux d'occupation</h3>
+                    <div class="text-3xl font-extrabold text-gray-800">68%</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold text-lg mb-4">Dernières Activités</h3>
+                <ul class="space-y-4">
+                    <li class="flex items-center justify-between border-b pb-2">
+                        <span>Nouvelle réservation (Dacia Duster) par Yacine B.</span>
+                        <span class="text-sm text-gray-500">Il y a 10 min</span>
+                    </li>
+                    <li class="flex items-center justify-between border-b pb-2">
+                        <span>Paiement reçu (45,000 DZD) - Réf: TR-982</span>
+                        <span class="text-sm text-gray-500">Il y a 1 heure</span>
+                    </li>
+                    <li class="flex items-center justify-between border-b pb-2">
+                        <span>Retour véhicule validé (Renault Symbol)</span>
+                        <span class="text-sm text-gray-500">Il y a 3 heures</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+
+        <!-- 9. FLEET MANAGEMENT PAGE -->
+        <section id="page-admin-fleet" class="page-view">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Gestion du Parc Automobile</h2>
+                <button class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primaryDark">
+                    <i class="fa-solid fa-plus mr-2"></i>Ajouter Véhicule
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md overflow-hidden overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                            <th class="p-4">ID</th>
+                            <th class="p-4">Véhicule</th>
+                            <th class="p-4">Immatriculation</th>
+                            <th class="p-4">Catégorie</th>
+                            <th class="p-4">Tarif/J</th>
+                            <th class="p-4">Statut</th>
+                            <th class="p-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fleet-table-body" class="text-sm">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-gray-400 py-8 text-center mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-bold text-white mb-2 text-xl">Car<span class="text-primary">Go</span></p>
+            <p>&copy; 2025-2026 AutoLocation MiniProjet. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DATA STATE (Mocks based on Database Schema) ---
+        const MOCK_VEHICLES = [
+            { id: 1, marque: 'Renault', modele: 'Clio 4', annee: 2022, immatriculation: '12345 122 16', categorie: 'Citadine', tarif: 4000, places: 5, boite: 'Manuelle', disponible: true, photo: 'https://images.unsplash.com/photo-1661286095813-c43dd8dc0712?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 2, marque: 'Dacia', modele: 'Duster', annee: 2023, immatriculation: '54321 123 31', categorie: 'SUV', tarif: 6000, places: 5, boite: 'Manuelle', disponible: true, photo: 'https://images.unsplash.com/photo-1728472804219-0b23a40e7ae3?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            { id: 3, marque: 'Volkswagen', modele: 'Golf 8', annee: 2021, immatriculation: '99887 121 16', categorie: 'Berline', tarif: 5000, places: 5, boite: 'Automatique', disponible: false, photo: 'https://images.unsplash.com/photo-1748466245956-8dcc098bf0e4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzR8fGdvbGYlMjA4fGVufDB8fDB8fHww' },
+            { id: 4, marque: 'Seat', modele: 'Ibiza', annee: 2022, immatriculation: '11223 122 09', categorie: 'Citadine', tarif: 4500, places: 5, boite: 'Manuelle', disponible: true, photo: 'https://images.unsplash.com/photo-1580121309617-fd390dadd163?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c2VhdCUyMGNhcnxlbnwwfHwwfHx8MA%3D%3D' },
+            { id: 5, marque: 'Skoda', modele: 'Octavia', annee: 2023, immatriculation: '44556 123 16', categorie: 'Berline', tarif: 8000, places: 5, boite: 'Automatique', disponible: true, photo: 'https://images.unsplash.com/photo-1673822317394-6fd502a324e6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fHNrb2RhJTIwb2N0YXZpYXxlbnwwfHwwfHx8MA%3D%3D' },
+            { id: 6, marque: 'Kia', modele: 'Sportage', annee: 2022, immatriculation: '77889 122 31', categorie: 'SUV', tarif: 9000, places: 5, boite: 'Automatique', disponible: true, photo: 'https://images.unsplash.com/photo-1688893287874-ac7fbd686c24?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }
+        ];
+
+        const MOCK_RESERVATIONS = [
+            { id: 101, vehicule: 'Renault Symbol', debut: '2025-09-10', fin: '2025-09-15', lieu: 'Alger Aéroport', montant: 20000, statut: 'Terminée' },
+            { id: 102, vehicule: 'Dacia Duster', debut: '2026-04-01', fin: '2026-04-05', lieu: 'Oran', montant: 24000, statut: 'Confirmée' }
+        ];
+
+        // Global State
+        let STATE = {
+            currentUser: null, // { role: 'client' | 'admin', name: string }
+            currentView: 'home',
+            activeFilterCat: 'all',
+            activeFilterPrice: 15000,
+            selectedCarId: null
+        };
+
+
+        // --- NAVIGATION & RENDERING ENGINE ---
+        function navigate(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            // Show target page
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            STATE.currentView = pageId;
+
+            // Page specific rendering
+            if(pageId === 'home') renderHomeCars();
+            if(pageId === 'catalogue') renderCatalogue();
+            if(pageId === 'client-reservations') renderClientReservations();
+            if(pageId === 'admin-fleet') renderFleetTable();
+
+            updateNavbar();
+            window.scrollTo(0,0);
+        }
+
+        function updateNavbar() {
+            const navMenu = document.getElementById('nav-menu');
+            let html = `<button onclick="navigate('catalogue')" class="text-gray-600 hover:text-primary font-bold transition">Catalogue</button>`;
+
+            if (!STATE.currentUser) {
+                html += `
+                    <button onclick="navigate('login')" class="text-gray-600 hover:text-primary font-bold px-3 transition">Connexion</button>
+                    <button onclick="navigate('register')" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primaryDark transition">Inscription</button>
+                `;
+            } else if (STATE.currentUser.role === 'client') {
+                html += `
+                    <button onclick="navigate('client-reservations')" class="text-gray-600 hover:text-primary font-bold px-3 transition">Mes Réservations</button>
+                    <button onclick="navigate('client-profile')" class="text-gray-600 hover:text-primary font-bold px-3 transition"><i class="fa-solid fa-user mr-1"></i> Profil</button>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 font-bold px-3 transition"><i class="fa-solid fa-sign-out-alt"></i></button>
+                `;
+            } else if (STATE.currentUser.role === 'admin') {
+                html += `
+                    <button onclick="navigate('admin-dashboard')" class="text-gray-600 hover:text-primary font-bold px-3 transition">Dashboard</button>
+                    <button onclick="navigate('admin-fleet')" class="text-gray-600 hover:text-primary font-bold px-3 transition">Flotte</button>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 font-bold px-3 transition"><i class="fa-solid fa-sign-out-alt"></i></button>
+                `;
+            }
+            navMenu.innerHTML = html;
+        }
+
+        // --- AUTHENTICATION ACTIONS ---
+        function loginUser() {
+            STATE.currentUser = { role: 'client', name: 'Client CarGo' };
+            navigate('home');
+        }
+        function loginAdmin() {
+            STATE.currentUser = { role: 'admin', name: 'Admin CarGo' };
+            navigate('admin-dashboard');
+        }
+        function logout() {
+            STATE.currentUser = null;
+            navigate('home');
+        }
+
+
+        // --- UI RENDER FUNCTIONS ---
+        
+        // Render Single Car Card HTML
+        function generateCarCard(car) {
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden car-card cursor-pointer flex flex-col" onclick="showCarDetails(${car.id})">
+                    <div class="h-48 bg-gray-200 relative">
+                        <img src="${car.photo}" alt="${car.marque}" class="w-full h-full object-cover">
+                        ${!car.disponible ? `<div class="absolute inset-0 bg-red-500 bg-opacity-70 flex items-center justify-center text-white font-bold text-lg">Indisponible</div>` : ''}
+                    </div>
+                    <div class="p-5 flex-grow flex flex-col">
+                        <span class="text-xs font-bold text-primary uppercase tracking-wider mb-1">${car.categorie}</span>
+                        <h4 class="text-lg font-bold text-gray-900">${car.marque} ${car.modele}</h4>
+                        <div class="text-gray-500 text-sm mt-1 mb-4 flex gap-3">
+                            <span><i class="fa-solid fa-calendar-alt text-gray-400"></i> ${car.annee}</span>
+                            <span><i class="fa-solid fa-cogs text-gray-400"></i> ${car.boite}</span>
+                        </div>
+                        <div class="mt-auto pt-4 border-t flex justify-between items-center">
+                            <span class="text-xl font-extrabold">${car.tarif} <span class="text-sm text-gray-500 font-normal">DZD/j</span></span>
+                            <button class="bg-primary text-white px-3 py-1.5 rounded text-sm font-bold hover:bg-primaryDark transition ${!car.disponible ? 'opacity-50 cursor-not-allowed' : ''}">Réserver</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHomeCars() {
+            const container = document.getElementById('home-featured-cars');
+            // Show only first 4 available cars on home
+            const cars = MOCK_VEHICLES.filter(c => c.disponible).slice(0, 4);
+            container.innerHTML = cars.map(generateCarCard).join('');
+        }
+
+        function filterCatalogue(category) {
+            STATE.activeFilterCat = category;
+            renderCatalogue();
+        }
+
+        function filterCataloguePrice(price) {
+            STATE.activeFilterPrice = parseInt(price);
+            renderCatalogue();
+        }
+
+        function renderCatalogue() {
+            const container = document.getElementById('catalogue-grid');
+            const countLabel = document.getElementById('catalogue-count');
+            
+            const filtered = MOCK_VEHICLES.filter(car => {
+                const matchCat = STATE.activeFilterCat === 'all' || car.categorie === STATE.activeFilterCat;
+                const matchPrice = car.tarif <= STATE.activeFilterPrice;
+                return matchCat && matchPrice;
+            });
+
+            countLabel.innerText = `${filtered.length} véhicule(s) trouvé(s)`;
+            container.innerHTML = filtered.map(generateCarCard).join('');
+        }
+
+        function showCarDetails(carId) {
+            const car = MOCK_VEHICLES.find(c => c.id === carId);
+            if(!car) return;
+            
+            STATE.selectedCarId = carId;
+            const container = document.getElementById('details-container');
+            
+            container.innerHTML = `
+                <div class="w-full md:w-1/2 h-64 md:h-auto">
+                    <img src="${car.photo}" class="w-full h-full object-cover" alt="Car">
+                </div>
+                <div class="w-full md:w-1/2 p-8">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">${car.categorie}</span>
+                    <h2 class="text-3xl font-extrabold mt-3 mb-2">${car.marque} ${car.modele}</h2>
+                    <p class="text-gray-500 mb-6 border-b pb-6">Année: ${car.annee} • ${car.places} Places • Boîte ${car.boite}</p>
+                    
+                    <div class="text-3xl font-bold text-primary mb-6">${car.tarif} DZD <span class="text-base text-gray-500 font-normal">/ jour</span></div>
+                    
+                    <form onsubmit="handleReservation(event)" class="bg-gray-50 p-6 rounded-xl border">
+                        <h3 class="font-bold mb-4">Réserver ce véhicule</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Date Début</label>
+                                <input type="date" id="res-start" required class="w-full border rounded p-2 text-sm" onchange="calculateTotal(${car.tarif})">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Date Fin</label>
+                                <input type="date" id="res-end" required class="w-full border rounded p-2 text-sm" onchange="calculateTotal(${car.tarif})">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold mb-1">Lieu de prise en charge</label>
+                            <select class="w-full border rounded p-2 text-sm">
+                                <option>Aéroport Alger</option>
+                                <option>Oran Centre</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mt-6 border-t pt-4">
+                            <span class="font-bold">Total estimé:</span>
+                            <span id="res-total" class="text-xl font-bold text-gray-900">0 DZD</span>
+                        </div>
+                        
+                        ${!car.disponible 
+                            ? `<button disabled class="w-full bg-red-300 text-white font-bold py-3 rounded-lg mt-4 cursor-not-allowed">Véhicule Indisponible</button>`
+                            : `<button type="submit" class="w-full bg-primary hover:bg-primaryDark text-white font-bold py-3 rounded-lg mt-4 transition">Confirmer & Payer</button>`
+                        }
+                    </form>
+                </div>
+            `;
+            navigate('details');
+        }
+
+        function calculateTotal(tarifJ) {
+            const start = document.getElementById('res-start').value;
+            const end = document.getElementById('res-end').value;
+            if(start && end) {
+                const d1 = new Date(start);
+                const d2 = new Date(end);
+                const diffTime = Math.abs(d2 - d1);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                if(diffDays > 0) {
+                    document.getElementById('res-total').innerText = (diffDays * tarifJ) + " DZD";
+                } else {
+                    document.getElementById('res-total').innerText = "Erreur dates";
+                }
+            }
+        }
+
+        function handleReservation(e) {
+            e.preventDefault();
+            if (!STATE.currentUser) {
+                alert("Veuillez vous connecter pour réserver !");
+                navigate('login');
+                return;
+            }
+            alert("Redirection vers la passerelle de paiement (Stripe/CIB)... \n\nRéservation confirmée avec succès !");
+            navigate('client-reservations');
+        }
+
+        function renderClientReservations() {
+            const tbody = document.getElementById('client-reservations-list');
+            tbody.innerHTML = MOCK_RESERVATIONS.map(res => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-4 font-bold">${res.vehicule}</td>
+                    <td class="p-4">${res.debut} au ${res.fin}</td>
+                    <td class="p-4">${res.lieu}</td>
+                    <td class="p-4 font-bold text-gray-900">${res.montant} DZD</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${res.statut === 'Terminée' ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}">${res.statut}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderFleetTable() {
+            const tbody = document.getElementById('fleet-table-body');
+            tbody.innerHTML = MOCK_VEHICLES.map(car => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-4 text-gray-500">#${car.id}</td>
+                    <td class="p-4 font-bold">${car.marque} ${car.modele} <span class="text-xs text-gray-400 block">${car.annee}</span></td>
+                    <td class="p-4">${car.immatriculation}</td>
+                    <td class="p-4">${car.categorie}</td>
+                    <td class="p-4 font-bold">${car.tarif} DZD</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-xs font-bold ${car.disponible ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${car.disponible ? 'Disponible' : 'En location'}
+                        </span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button class="text-blue-500 hover:text-blue-700 mx-1" title="Modifier"><i class="fa-solid fa-edit"></i></button>
+                        <button class="text-red-500 hover:text-red-700 mx-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            updateNavbar();
+            renderHomeCars();
+        };
+    </script>
+</body>
+</html>
